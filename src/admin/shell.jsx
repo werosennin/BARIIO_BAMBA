@@ -2,16 +2,22 @@
 import React from 'react';
 import { Logo, Button, Input } from '../components/index.js';
 import { Ic } from '../icons.jsx';
+import { supabase } from '../data/supabase.js';
 
-// ---- LOGIN ----
-export function AdminLogin({ onLogin }) {
-  const [u, setU] = React.useState('dueno');
-  const [p, setP] = React.useState('');
+// ---- LOGIN (autenticación real con Supabase) ----
+export function AdminLogin() {
+  const [email, setEmail] = React.useState('');
+  const [pw, setPw] = React.useState('');
   const [err, setErr] = React.useState('');
-  const submit = (e) => {
+  const [busy, setBusy] = React.useState(false);
+  const submit = async (e) => {
     e.preventDefault();
-    if (!p) { setErr('Escribe tu contraseña'); return; }
-    onLogin();
+    if (!email || !pw) { setErr('Escribe tu correo y contraseña'); return; }
+    setBusy(true); setErr('');
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: pw });
+    setBusy(false);
+    if (error) setErr('Correo o contraseña incorrectos.');
+    // Si es correcto, AdminApp detecta la sesión y muestra el panel.
   };
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--surface-page)' }}>
@@ -21,11 +27,11 @@ export function AdminLogin({ onLogin }) {
         </div>
         <div className="bb-eyebrow" style={{ textAlign: 'center', marginBottom: 26 }}>Panel de administración</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <Input label="Usuario" value={u} onChange={(e) => setU(e.target.value)} />
-          <Input label="Contraseña" type="password" placeholder="••••••••" value={p} onChange={(e) => { setP(e.target.value); setErr(''); }} error={err} />
-          <Button type="submit" block size="lg">Entrar</Button>
+          <Input label="Correo" type="email" placeholder="correo@ejemplo.com" value={email} onChange={(e) => { setEmail(e.target.value); setErr(''); }} />
+          <Input label="Contraseña" type="password" placeholder="••••••••" value={pw} onChange={(e) => { setPw(e.target.value); setErr(''); }} error={err} />
+          <Button type="submit" block size="lg" loading={busy}>Entrar</Button>
         </div>
-        <p style={{ marginTop: 18, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-400)', textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>Demo · escribe cualquier contraseña</p>
+        <p style={{ marginTop: 18, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-400)', textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>Acceso solo para el administrador</p>
       </form>
     </div>
   );

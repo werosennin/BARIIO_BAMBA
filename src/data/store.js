@@ -1,61 +1,61 @@
-/* Barrio Bamba — almacén del menú con persistencia en el navegador (localStorage).
-   Sin servidor: los cambios del panel (productos, precios, promos, fotos) se guardan
-   en ESTE navegador/dispositivo y sobreviven a recargas. El cliente lee de aquí, así
-   que las fotos subidas aparecen en el menú (en el mismo dispositivo). */
+/* Barrio Bamba — almacén del menú en la NUBE (Supabase).
+   El menú (productos + promociones) vive en una fila JSON de la tabla `menu`.
+   Los clientes lo leen (lectura pública); el admin lo guarda (requiere login).
+   Así las fotos y cambios se ven desde cualquier dispositivo. */
 import React from 'react';
 import { MENU as DEFAULT_MENU } from './menu.js';
+import { supabase } from './supabase.js';
 
-const KEY = 'bb_menu_v1';
-let quotaWarned = false;
+const clone = (o) => JSON.parse(JSON.stringify(o));
 
-const clone = (obj) => JSON.parse(JSON.stringify(obj));
+// Estado inicial: el menú por defecto (para que la UI nunca esté vacía mientras carga).
+let state = clone(DEFAULT_MENU);
+const listeners = new Set();
+const emit = () => listeners.forEach((l) => l());
 
-function load() {
+// Carga el menú guardado desde la nube y reemplaza el estado.
+async function fetchMenu() {
   try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const saved = JSON.parse(raw);
-      // categorías e info no se editan: siempre del default. products/promos: persistidos.
-      return {
+    const { data, error } = await supabase.from('menu').select('data').eq('id', 1).maybeSingle();
+    if (error) { console.warn('Menú (nube): ', error.message); return; }
+    if (data && data.data) {
+      const saved = data.data;
+      state = {
         categories: DEFAULT_MENU.categories,
         info: DEFAULT_MENU.info,
-        products: Array.isArray(saved.products) ? saved.products : clone(DEFAULT_MENU.products),
-        promos: Array.isArray(saved.promos) ? saved.promos : clone(DEFAULT_MENU.promos),
+        products: Array.isArray(saved.products) ? saved.products : state.products,
+        promos: Array.isArray(saved.promos) ? saved.promos : state.promos,
       };
+      emit();
     }
-  } catch (e) { /* localStorage no disponible o dato corrupto → usar default */ }
-  return clone(DEFAULT_MENU);
-}
-
-let state = load();
-const listeners = new Set();
-
-function persist() {
-  try {
-    localStorage.setItem(KEY, JSON.stringify({ products: state.products, promos: state.promos }));
   } catch (e) {
-    if (!quotaWarned) {
-      quotaWarned = true;
-      alert('Se alcanzó el límite de almacenamiento del navegador. Las fotos más recientes podrían no conservarse al recargar. Para muchas fotos conviene conectar almacenamiento en la nube.');
+    console.warn('Menú (nube) no disponible, usando valores por defecto.');
+  }
+}
+fetchMenu();
+
+// Guarda el menú completo en la nube (sólo funciona con sesión de admin).
+async function persist() {
+  try {
+    const { error } = await supabase
+      .from('menu')
+      .upsert({ id: 1, data: { products: state.products, promos: state.promos }, updated_at: new Date().toISOString() });
+    if (error) {
+      alert('No se pudo guardar en la nube: ' + error.message + '\n(¿Iniciaste sesión como admin?)');
     }
+  } catch (e) {
+    alert('No se pudo guardar en la nube. Revisa tu conexión.');
   }
 }
 
-const emit = () => listeners.forEach((l) => l());
-
 export function getMenu() { return state; }
+export function refreshMenu() { return fetchMenu(); }
 
-export function setProducts(products) { state = { ...state, products }; persist(); emit(); }
-export function setPromos(promos) { state = { ...state, promos }; persist(); emit(); }
+export function setProducts(products) { state = { ...state, products }; emit(); persist(); }
+export function setPromos(promos) { state = { ...state, promos }; emit(); persist(); }
+export function resetMenu() { state = clone(DEFAULT_MENU); emit(); persist(); }
 
-export function resetMenu() {
-  state = clone(DEFAULT_MENU);
-  try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
-  quotaWarned = false;
-  emit();
-}
-
-/** Hook de React: re-renderiza cuando cambia el menú guardado. */
+/** Hook de React: re-renderiza cuando cambia el menú (local o al llegar de la nube). */
 export function useMenu() {
   const [, force] = React.useReducer((x) => x + 1, 0);
   React.useEffect(() => {

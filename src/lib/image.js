@@ -1,7 +1,8 @@
 /* Barrio Bamba — utilidad de imagen.
-   Convierte un archivo elegido por el usuario en un data-URL reducido (redimensionado
-   y comprimido a JPEG) para que las fotos pesen poco y quepan en el almacenamiento. */
-export function fileToDownscaledDataUrl(file, maxDim = 1000, quality = 0.82) {
+   Redimensiona y comprime una imagen elegida por el usuario antes de subirla,
+   para que pese poco (carga rápida para los clientes). */
+
+function drawToCanvas(file, maxDim) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
@@ -18,12 +19,23 @@ export function fileToDownscaledDataUrl(file, maxDim = 1000, quality = 0.82) {
         const canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas);
       };
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
+  });
+}
+
+/** Devuelve un Blob JPEG redimensionado (para subir a la nube). */
+export async function fileToDownscaledBlob(file, maxDim = 1200, quality = 0.82) {
+  const canvas = await drawToCanvas(file, maxDim);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('No se pudo convertir la imagen.'))),
+      'image/jpeg',
+      quality,
+    );
   });
 }

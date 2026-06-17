@@ -4,7 +4,8 @@ import { Button, IconButton, Input, Select, Switch, Badge, EmptyState } from '..
 import { Ic } from '../icons.jsx';
 import { MENU, money } from '../data/menu.js';
 import { setProducts, setPromos, resetMenu } from '../data/store.js';
-import { fileToDownscaledDataUrl } from '../lib/image.js';
+import { uploadProductImage } from '../data/supabase.js';
+import { fileToDownscaledBlob } from '../lib/image.js';
 import { AdminStatCard as StatCard, AdminDrawer as Drawer } from './shell.jsx';
 
 const catName = (id) => (MENU.categories.find((c) => c.id === id) || {}).name || id;
@@ -138,6 +139,7 @@ function Th({ cols, labels, extra }) {
 
 function ProductDrawer({ editing, onClose, onSave, onDelete, data }) {
   const [f, setF] = React.useState(editing || {});
+  const [uploading, setUploading] = React.useState(false);
   const fileRef = React.useRef(null);
   React.useEffect(() => { setF(editing || {}); }, [editing]);
   if (!editing) return null;
@@ -149,12 +151,15 @@ function ProductDrawer({ editing, onClose, onSave, onDelete, data }) {
     if (!file) return;
     if (!file.type.startsWith('image/')) { alert('Elige un archivo de imagen (JPG, PNG, WEBP, etc.).'); return; }
     if (file.size > 25 * 1024 * 1024) { alert('La imagen es muy pesada (máx. 25 MB).'); return; }
+    setUploading(true);
     try {
-      const dataUrl = await fileToDownscaledDataUrl(file, 1000, 0.82);
-      setF((s) => ({ ...s, image: dataUrl }));
+      const blob = await fileToDownscaledBlob(file, 1200, 0.82);
+      const url = await uploadProductImage(blob);   // sube a la nube → URL pública
+      setF((s) => ({ ...s, image: url }));
     } catch (err) {
-      alert('No se pudo procesar la imagen. Intenta con otra.');
+      alert('No se pudo subir la imagen: ' + (err && err.message ? err.message : err));
     }
+    setUploading(false);
     e.target.value = '';
   };
   const clearImage = (e) => { e.stopPropagation(); setF((s) => ({ ...s, image: null })); };
@@ -168,11 +173,13 @@ function ProductDrawer({ editing, onClose, onSave, onDelete, data }) {
         {/* Subir foto desde el almacenamiento del dispositivo */}
         <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} style={{ display: 'none' }} />
         <div
-          onClick={() => fileRef.current && fileRef.current.click()}
+          onClick={() => { if (!uploading && fileRef.current) fileRef.current.click(); }}
           title="Subir foto desde tu dispositivo"
-          style={{ position: 'relative', height: 150, border: 'var(--bw) dashed var(--ink-900)', borderRadius: 'var(--r-sm)', background: f.image ? `center/cover no-repeat url("${f.image}")` : 'var(--bone-200)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--ink-500)', cursor: 'pointer', overflow: 'hidden' }}
+          style={{ position: 'relative', height: 150, border: 'var(--bw) dashed var(--ink-900)', borderRadius: 'var(--r-sm)', background: f.image ? `center/cover no-repeat url("${f.image}")` : 'var(--bone-200)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--ink-500)', cursor: uploading ? 'progress' : 'pointer', overflow: 'hidden' }}
         >
-          {f.image ? (
+          {uploading ? (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: 'var(--ink-700)', textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>Subiendo foto…</span>
+          ) : f.image ? (
             <>
               <span style={{ position: 'absolute', left: 8, bottom: 8, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 8px', background: 'var(--ink-900)', color: 'var(--bone-50)', borderRadius: 'var(--r-xs)', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>
                 <Ic n="image-plus" size={12} /> Cambiar foto
