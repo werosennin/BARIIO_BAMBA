@@ -1,0 +1,48 @@
+/* Barrio Bamba — Spacing, radios, bordes, sombras
+   Sistema "rudo pero limpio": esquinas casi rectas, bordes negros marcados,
+   sombras duras desplazadas (estilo sticker/serigrafía), nada de blur suave. */
+:root {
+  /* ---- Espaciado (base 4px) ---- */
+  --sp-0: 0; /* @kind spacing */
+  --sp-1: 0.25rem;  /* 4 */
+  --sp-2: 0.5rem;   /* 8 */
+  --sp-3: 0.75rem;  /* 12 */
+  --sp-4: 1rem;     /* 16 */
+  --sp-5: 1.25rem;  /* 20 */
+  --sp-6: 1.5rem;   /* 24 */
+  --sp-8: 2rem;     /* 32 */
+  --sp-10: 2.5rem;  /* 40 */
+  --sp-12: 3rem;    /* 48 */
+  --sp-16: 4rem;    /* 64 */
+  --sp-20: 5rem;    /* 80 */
+
+  /* ---- Anchos de contenedor ---- */
+  --w-app:    430px;   /* lienzo mobile-first (cliente) */
+  --w-content:720px;   /* lectura desktop */
+  --w-max:   1200px;   /* desktop ancho */
+
+  /* ---- Radios (apretados, no "redonditos") ---- */
+  --r-none: 0; /* @kind radius */
+  --r-xs:   2px;
+  --r-sm:   4px;
+  --r-md:   6px;
+  --r-lg:   10px;
+  --r-pill: 999px;     /* sólo para chips/tags ocasionales */
+
+  /* ---- Grosor de borde ---- */
+  --bw-hair: 1px;
+  --bw:      1.5px;    /* borde de marca por defecto */
+  --bw-bold: 2.5px;    /* énfasis */
+
+  /* ---- Sombras duras desplazadas (sin blur) ---- */
+  --shadow-stamp:  3px 3px 0 var(--ink-900);   /* tarjeta/botón marcado */
+  --shadow-stamp-lg: 5px 5px 0 var(--ink-900);
+  --shadow-press:  1px 1px 0 var(--ink-900);   /* estado presionado */
+  --shadow-soft:   0 2px 0 rgba(17,17,17,0.10);/* elevación mínima alternativa */
+  --shadow-pop:    0 16px 40px -12px rgba(17,17,17,0.45); /* modales/menús */
+
+  /* ---- Transiciones (rápidas, secas; nada de bounce) ---- */
+  --ease: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+  --dur-fast: 90ms; /* @kind other */
+  --dur:      150ms; /* @kind other */
+}

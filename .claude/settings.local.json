@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p design_extract)",
+      "Bash(tar -tzf webfetch-1781609918222-gvb7xp.bin)",
+      "Bash(tar -xzf webfetch-1781609918222-gvb7xp.bin -C design_extract)",
+      "Bash(cp /c/Users/elbag/.claude/projects/C--Users-elbag-Desktop-proyecto/cdf58f43-d36b-4562-bf09-4abfacd09840/tool-results/design_extract/barrio-bamba-design-system/project/assets/logo.png /c/Users/elbag/Desktop/proyecto/public/logo.png)",
+      "Bash(cp /c/Users/elbag/.claude/projects/C--Users-elbag-Desktop-proyecto/cdf58f43-d36b-4562-bf09-4abfacd09840/tool-results/design_extract/barrio-bamba-design-system/project/assets/logo-light.png /c/Users/elbag/Desktop/proyecto/public/logo-light.png)",
+      "Bash(cp /c/Users/elbag/.claude/projects/C--Users-elbag-Desktop-proyecto/cdf58f43-d36b-4562-bf09-4abfacd09840/tool-results/design_extract/barrio-bamba-design-system/project/tokens/colors.css /c/Users/elbag/Desktop/proyecto/src/styles/tokens/colors.css)",
+      "Bash(cp /c/Users/elbag/.claude/projects/C--Users-elbag-Desktop-proyecto/cdf58f43-d36b-4562-bf09-4abfacd09840/tool-results/design_extract/barrio-bamba-design-system/project/tokens/typography.css /c/Users/elbag/Desktop/proyecto/src/styles/tokens/typography.css)",
+      "Bash(cp /c/Users/elbag/.claude/projects/C--Users-elbag-Desktop-proyecto/cdf58f43-d36b-4562-bf09-4abfacd09840/tool-results/design_extract/barrio-bamba-design-system/project/tokens/spacing.css /c/Users/elbag/Desktop/proyecto/src/styles/tokens/spacing.css)",
+      "PowerShell(npm install --no-audit --no-fund 2>&1)",
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:nominatim.openstreetmap.org)",
+      "Bash(curl -s -H \"User-Agent: BarrioBambaApp/1.0 \\(contacto@barriobamba.mx\\)\" \"https://nominatim.openstreetmap.org/search?q=Calle%20Riobamba%2C%20Lindavista%2C%20Gustavo%20A.%20Madero%2C%20Ciudad%20de%20Mexico&format=jsonv2&limit=3\")",
+      "Bash(curl -s -H 'User-Agent: BarrioBambaApp/1.0 \\(contacto@barriobamba.mx\\)' 'https://nominatim.openstreetmap.org/search?q=Riobamba%2C%20Lindavista%2C%20Ciudad%20de%20Mexico&format=jsonv2&limit=2')",
+      "Bash(curl -s \"https://photon.komoot.io/api/?q=Calle+Riobamba+Lindavista+Gustavo+A+Madero+Ciudad+de+Mexico&limit=3&lang=es\")",
+      "Bash(curl -s \"https://photon.komoot.io/api/?q=Lindavista+Gustavo+A+Madero+Ciudad+de+Mexico&limit=2&lang=es\")",
+      "Bash(curl -s \"https://photon.komoot.io/api/?q=Calle+Riobamba+Lindavista+Gustavo+A+Madero+Ciudad+de+Mexico&limit=4\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(f.get\\('properties',{}\\).get\\('name'\\), '|', f.get\\('properties',{}\\).get\\('street'\\), f.get\\('properties',{}\\).get\\('district'\\), f.get\\('properties',{}\\).get\\('city'\\), '|', f['geometry']['coordinates']\\) for f in d.get\\('features',[]\\)]\")",
+      "Bash(curl -s \"https://photon.komoot.io/api/?q=Riobamba&lat=19.488&lon=-99.133&limit=6\")",
+      "Bash(curl -s -H 'User-Agent: BarrioBambaApp/1.0 \\(contacto@barriobamba.mx\\)' 'https://nominatim.openstreetmap.org/search?q=Riobamba&viewbox=-99.17,19.58,-99.05,19.44&bounded=1&format=jsonv2&limit=5')"
+    ]
+  }
+}

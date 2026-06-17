@@ -1,0 +1,9 @@
+/* Barrio Bamba — Webfonts
+   NOTE: These are Google Fonts substitutes chosen to match the brand brief
+   (condensed/mono uppercase display + clean grotesque body + brush script logo).
+   Replace with the restaurant's licensed menu fonts when available.
+   - Anton        → heavy condensed display (signage / poster energy)
+   - Archivo      → clean grotesque body & UI (readable, with character)
+   - Space Mono   → prices, tags, labels, "ticket" metadata
+   - Kaushan Script → PLACEHOLDER brush-script wordmark (pending real logo) */
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Kaushan+Script&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');

@@ -1,0 +1,64 @@
+/* Barrio Bamba — Color tokens
+   Estética blanco y negro urbana/tatuaje. Negro tinta sobre fondo crema/hueso,
+   tarjetas en blanco. Un único acento sutil ("salsa") usado con moderación. */
+:root {
+  /* ---- Base: tinta (negro) ---- */
+  --ink-900: #111111; /* color principal */
+  --ink-800: #1c1c1c;
+  --ink-700: #2a2a2a; /* texto secundario / pseudo-negro */
+  --ink-600: #444444;
+  --ink-500: #6b6660; /* texto tenue (cálido) */
+  --ink-400: #908a82;
+  --ink-300: #c0b9ad; /* bordes sobre crema */
+  --ink-200: #ddd6c9;
+
+  /* ---- Base: crema / hueso / papel ---- */
+  --bone-50:  #faf7f1;
+  --bone-100: #f4efe8; /* fondo de página */
+  --bone-200: #ece5da; /* relleno sutil / divisores */
+  --bone-300: #e2d9cb;
+  --paper:    #ffffff; /* tarjetas */
+
+  /* ---- Acento único: "salsa" (chile/ladrillo). Usar con moderación ---- */
+  --salsa-600: #a8341f;
+  --salsa-500: #c2402d; /* acento por defecto */
+  --salsa-100: #f3ddd6; /* fondo de realce muy tenue */
+
+  /* ---- Estados semánticos (desaturados, sin estridencia) ---- */
+  --ok-600:    #3f5d3a; /* activo / disponible (verde nopal apagado) */
+  --ok-100:    #e4ead8;
+  --warn-600:  #8a6a1f; /* aviso (ocre apagado) */
+  --warn-100:  #efe6cf;
+  --danger-600:#a8341f; /* error (mismo chile) */
+  --danger-100:#f3ddd6;
+
+  /* ================= ALIAS SEMÁNTICOS ================= */
+  /* Texto */
+  --text-strong:  var(--ink-900);
+  --text-body:    var(--ink-700);
+  --text-muted:   var(--ink-500);
+  --text-faint:   var(--ink-400);
+  --text-invert:  var(--bone-50);
+  --text-accent:  var(--salsa-600);
+
+  /* Superficies */
+  --surface-page:  var(--bone-100);
+  --surface-sunk:  var(--bone-200);
+  --surface-card:  var(--paper);
+  --surface-ink:   var(--ink-900); /* secciones invertidas */
+  --surface-accent:var(--salsa-500);
+
+  /* Bordes y líneas */
+  --border:        var(--ink-900);          /* borde duro de marca (1.5px) */
+  --border-soft:   var(--ink-300);          /* borde tenue sobre crema */
+  --border-hair:   var(--bone-300);          /* divisor finísimo */
+  --line-on-ink:   rgba(244,239,232,0.18);   /* divisor sobre negro */
+
+  /* Interacción */
+  --focus-ring:    var(--salsa-500);
+  --overlay:       rgba(17,17,17,0.62);      /* fondo de modal / scrim */
+
+  /* Estado "agotado / desactivado" */
+  --soldout-fg:    var(--ink-400);
+  --soldout-fill:  var(--bone-200);
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-ssr
+*.local
+.vite
+.DS_Store
+
+# Archivo HTML generado para abrir con doble clic (se regenera con `npm run build`)
+barrio-bamba.html
