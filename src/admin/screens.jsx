@@ -3,7 +3,7 @@ import React from 'react';
 import { Button, IconButton, Input, Select, Switch, Badge, EmptyState } from '../components/index.js';
 import { Ic } from '../icons.jsx';
 import { MENU, money } from '../data/menu.js';
-import { setProducts, setPromos, resetMenu } from '../data/store.js';
+import { setProducts, setPromos, resetMenu, getMenu } from '../data/store.js';
 import { uploadProductImage } from '../data/supabase.js';
 import { fileToDownscaledBlob } from '../lib/image.js';
 import { useViewport } from '../lib/useViewport.js';
@@ -97,8 +97,33 @@ export function AdminProductos({ data }) {
   };
   const reset = () => { if (window.confirm('¿Restablecer el menú a su versión original? Se perderán tus cambios y fotos guardados.')) resetMenu(); };
 
+  // Subida rápida de foto por platillo (un clic en la fila → elige archivo → se sube y guarda)
+  const fileRef = React.useRef(null);
+  const [uploadId, setUploadId] = React.useState(null);
+  const [busyId, setBusyId] = React.useState(null);
+  const pickPhoto = (id) => { setUploadId(id); if (fileRef.current) { fileRef.current.value = ''; fileRef.current.click(); } };
+  const onRowFile = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    const id = uploadId;
+    if (!file || !id) return;
+    if (!file.type.startsWith('image/')) { alert('Elige un archivo de imagen (JPG, PNG, WEBP).'); return; }
+    if (file.size > 25 * 1024 * 1024) { alert('La imagen es muy pesada (máx. 25 MB).'); return; }
+    setBusyId(id);
+    try {
+      const blob = await fileToDownscaledBlob(file, 1200, 0.82);
+      const url = await uploadProductImage(blob);
+      setProducts(getMenu().products.map((p) => (p.id === id ? { ...p, image: url } : p)));
+    } catch (err) {
+      alert('No se pudo subir la imagen: ' + (err && err.message ? err.message : err));
+    }
+    setBusyId(null);
+    setUploadId(null);
+    e.target.value = '';
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <input ref={fileRef} type="file" accept="image/*" onChange={onRowFile} style={{ display: 'none' }} />
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ width: isMobile ? '100%' : 280 }}><Input placeholder="Buscar platillo…" value={q} onChange={(e) => setQ(e.target.value)} prefix={<Ic n="search" size={15} />} /></div>
         <Button variant="ghost" style={{ marginLeft: isMobile ? 0 : 'auto' }} onClick={reset}>Restablecer</Button>
@@ -106,12 +131,12 @@ export function AdminProductos({ data }) {
       </div>
 
       <div style={{ background: 'var(--paper)', border: 'var(--bw) solid var(--ink-900)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-stamp)', overflowX: 'auto' }}>
-        <div style={{ minWidth: 640 }}>
-        <Th cols="28px 1fr 130px 90px 110px" labels={['', 'Producto', 'Categoría', 'Precio', 'Estado']} extra="64px" />
+        <div style={{ minWidth: 680 }}>
+        <Th cols="28px 1fr 130px 90px 110px" labels={['', 'Producto', 'Categoría', 'Precio', 'Estado']} extra="104px" />
         {filtered.length === 0
           ? <div style={{ padding: 12 }}><EmptyState icon={<Ic n="search-x" size={24} />} title="Sin resultados" description={`No hay platillos para "${q}".`} /></div>
           : filtered.map((p, i) => (
-            <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 130px 90px 110px 64px', alignItems: 'center', gap: 12, padding: '12px 18px', borderTop: i ? 'var(--bw-hair) solid var(--border-hair)' : 'none', opacity: p.active ? 1 : 0.6 }}>
+            <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 130px 90px 110px 104px', alignItems: 'center', gap: 12, padding: '12px 18px', borderTop: i ? 'var(--bw-hair) solid var(--border-hair)' : 'none', opacity: p.active ? 1 : 0.6 }}>
               <span style={{ color: 'var(--ink-300)', cursor: 'grab' }} title="Reordenar"><Ic n="grip-vertical" size={16} /></span>
               <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
                 {p.image && <img src={p.image} alt="" style={{ width: 36, height: 36, flex: '0 0 auto', objectFit: 'cover', border: 'var(--bw-hair) solid var(--ink-300)', borderRadius: 'var(--r-xs)' }} />}
@@ -123,7 +148,10 @@ export function AdminProductos({ data }) {
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--ink-500)', textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>{catName(p.cat)}</span>
               <span className="bb-tnum" style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--ink-900)' }}>{money(p.price || 0)}</span>
               <Switch size="sm" checked={p.active} onChange={() => toggle(p.id)} />
-              <IconButton size="sm" variant="outline" label="Editar" onClick={() => setEditing({ ...p })}><Ic n="pencil" size={15} /></IconButton>
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                <IconButton size="sm" variant={p.image ? 'solid' : 'outline'} label={busyId === p.id ? 'Subiendo foto' : (p.image ? 'Cambiar foto' : 'Subir foto')} disabled={busyId === p.id} onClick={() => pickPhoto(p.id)}><Ic n="image-plus" size={15} /></IconButton>
+                <IconButton size="sm" variant="outline" label="Editar" onClick={() => setEditing({ ...p })}><Ic n="pencil" size={15} /></IconButton>
+              </div>
             </div>
           ))}
         </div>
