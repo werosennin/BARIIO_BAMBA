@@ -63,6 +63,10 @@ img { display: block; max-width: 100%; }
   color: var(--text-muted);
 }
 
+/* Ocultar barra de scroll (carruseles / rieles horizontales) */
+.bb-hide-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.bb-hide-scroll::-webkit-scrollbar { display: none; }
+
 /* Animaciones base (secas, sin bounce) */
 @keyframes bb-spin { to { transform: rotate(360deg); } }
 @keyframes bb-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }

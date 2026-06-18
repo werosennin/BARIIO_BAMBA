@@ -6,6 +6,71 @@ import { LocationPanel } from './Ubicacion.jsx';
 import { useMenu } from '../data/store.js';
 import { useViewport } from '../lib/useViewport.js';
 
+/* Carrusel horizontal de promociones activas. Avanza solo cada 5s (se pausa al
+   pasar el cursor) y se puede deslizar; los puntos de abajo navegan. */
+function PromoCarousel({ promos, isMobile }) {
+  const trackRef = React.useRef(null);
+  const pausedRef = React.useRef(false);
+  const [active, setActive] = React.useState(0);
+  const many = promos.length > 1;
+
+  React.useEffect(() => {
+    if (!many) return undefined;
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return undefined;
+    const id = setInterval(() => {
+      if (pausedRef.current) return;
+      const el = trackRef.current;
+      if (!el) return;
+      const w = el.clientWidth || 1;
+      const next = Math.round(el.scrollLeft / w) + 1;
+      el.scrollTo({ left: (next >= promos.length ? 0 : next) * w, behavior: 'smooth' });
+    }, 5000);
+    return () => clearInterval(id);
+  }, [many, promos.length]);
+
+  const onScroll = () => {
+    const el = trackRef.current;
+    if (el) setActive(Math.round(el.scrollLeft / (el.clientWidth || 1)));
+  };
+  const goTo = (i) => { const el = trackRef.current; if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' }); };
+
+  return (
+    <div
+      onMouseEnter={() => { pausedRef.current = true; }}
+      onMouseLeave={() => { pausedRef.current = false; }}
+    >
+      <div ref={trackRef} onScroll={onScroll} className="bb-hide-scroll" style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', borderRadius: 'var(--r-sm)' }}>
+        {promos.map((p) => (
+          <div key={p.id} style={{ flex: '0 0 100%', minWidth: '100%', scrollSnapAlign: 'start', display: 'flex' }}>
+            <div style={{ flex: 1, background: 'var(--ink-900)', color: 'var(--bone-50)', borderRadius: 'var(--r-sm)', border: 'var(--bw) solid var(--ink-900)', boxShadow: 'var(--shadow-stamp)', padding: isMobile ? '18px 18px 20px' : '24px 28px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: isMobile ? 12 : 24 }}>
+              <div>
+                <span className="bb-eyebrow" style={{ color: 'var(--salsa-500)' }}>Promo · {p.day}</span>
+                <h2 style={{ fontSize: isMobile ? 32 : 44, color: 'var(--bone-50)', lineHeight: 1.02, marginTop: 6 }}>{p.name}</h2>
+                <p style={{ font: 'var(--type-body)', color: 'var(--bone-300)', marginTop: 12 }}>{p.detail}</p>
+              </div>
+              <Badge tone="accent">{p.to}</Badge>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {many && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+          {promos.map((p, i) => (
+            <button key={p.id} onClick={() => goTo(i)} aria-label={`Ver promoción ${i + 1}`} style={{
+              width: i === active ? 24 : 10, height: 10, padding: 0, cursor: 'pointer',
+              background: i === active ? 'var(--ink-900)' : 'transparent',
+              border: '1.5px solid var(--ink-900)', borderRadius: 999,
+              transition: 'width var(--dur) var(--ease), background var(--dur) var(--ease)',
+            }} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ClienteDesktop() {
   const data = useMenu();
   const { isMobile } = useViewport();
@@ -14,7 +79,7 @@ export function ClienteDesktop() {
 
   const category = data.categories.find((c) => c.id === cat);
   const items = data.products.filter((p) => p.cat === cat);
-  const promo = data.promos.find((p) => p.active) || data.promos[0];
+  const activePromos = data.promos.filter((p) => p.active);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--surface-page)' }}>
@@ -37,17 +102,12 @@ export function ClienteDesktop() {
         </div>
       </header>
 
-      {/* Promo banner */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '16px 14px 0' : '24px 28px 0' }}>
-        <div style={{ background: 'var(--ink-900)', color: 'var(--bone-50)', borderRadius: 'var(--r-sm)', border: 'var(--bw) solid var(--ink-900)', boxShadow: 'var(--shadow-stamp)', padding: isMobile ? '18px 18px 20px' : '24px 28px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: isMobile ? 12 : 24 }}>
-          <div>
-            <span className="bb-eyebrow" style={{ color: 'var(--salsa-500)' }}>Promo del día · {promo.day}</span>
-            <h2 style={{ fontSize: isMobile ? 32 : 44, color: 'var(--bone-50)', lineHeight: 1.02, marginTop: 6 }}>{promo.name}</h2>
-            <p style={{ font: 'var(--type-body)', color: 'var(--bone-300)', marginTop: 12 }}>{promo.detail}</p>
-          </div>
-          <Badge tone="accent">{promo.to}</Badge>
+      {/* Promociones activas (carrusel horizontal) */}
+      {activePromos.length > 0 && (
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '16px 14px 0' : '24px 28px 0' }}>
+          <PromoCarousel promos={activePromos} isMobile={isMobile} />
         </div>
-      </div>
+      )}
 
       {/* Body */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '16px 14px' : '28px', display: isMobile ? 'block' : 'grid', gridTemplateColumns: isMobile ? undefined : '232px 1fr', gap: 28, alignItems: 'start' }}>
