@@ -3,6 +3,7 @@ import React from 'react';
 import { Logo, Button, Input } from '../components/index.js';
 import { Ic } from '../icons.jsx';
 import { supabase } from '../data/supabase.js';
+import { useViewport } from '../lib/useViewport.js';
 
 // ---- LOGIN (autenticación real con Supabase) ----
 export function AdminLogin() {
@@ -46,6 +47,46 @@ export const NAV = [
 ];
 
 export function AdminLayout({ active, onNav, onLogout, title, action, children }) {
+  const { isMobile } = useViewport();
+
+  // --- Móvil: barra superior con navegación horizontal ---
+  if (isMobile) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--surface-page)' }}>
+        <header style={{ position: 'sticky', top: 0, zIndex: 30, background: 'var(--ink-900)', color: 'var(--bone-100)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
+            <Logo size={26} invert />
+            <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', border: 'var(--bw-hair) solid var(--ok-600)', borderRadius: 999, color: 'var(--ok-600)', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--ok-600)' }} />Abierto
+            </span>
+            <button onClick={onLogout} aria-label="Salir" style={{ width: 34, height: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: 'var(--bone-200)', border: '1px solid var(--line-on-ink)', borderRadius: 'var(--r-sm)', cursor: 'pointer' }}><Ic n="log-out" size={15} /></button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '0 14px 12px', WebkitOverflowScrolling: 'touch' }}>
+            {NAV.map((n) => {
+              const on = n.id === active;
+              return (
+                <button key={n.id} onClick={() => onNav(n.id)} style={{
+                  flex: '0 0 auto', display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 13px', cursor: 'pointer',
+                  background: on ? 'var(--bone-50)' : 'transparent', color: on ? 'var(--ink-900)' : 'var(--bone-200)',
+                  border: on ? 'none' : '1px solid var(--line-on-ink)', borderRadius: 999,
+                  fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)', whiteSpace: 'nowrap',
+                }}><Ic n={n.icon} size={14} />{n.label}</button>
+              );
+            })}
+          </div>
+        </header>
+        <main style={{ padding: '16px 14px', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+            <h1 style={{ fontSize: 26 }}>{title}</h1>
+            {action}
+          </div>
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // --- Escritorio: sidebar fijo ---
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--surface-page)' }}>
       {/* Sidebar */}

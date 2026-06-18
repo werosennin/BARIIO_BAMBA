@@ -6,26 +6,28 @@ import { MENU, money } from '../data/menu.js';
 import { setProducts, setPromos, resetMenu } from '../data/store.js';
 import { uploadProductImage } from '../data/supabase.js';
 import { fileToDownscaledBlob } from '../lib/image.js';
+import { useViewport } from '../lib/useViewport.js';
 import { AdminStatCard as StatCard, AdminDrawer as Drawer } from './shell.jsx';
 
 const catName = (id) => (MENU.categories.find((c) => c.id === id) || {}).name || id;
 
 /* =================== TABLERO =================== */
 export function AdminDashboard({ data, onGo }) {
+  const { isMobile } = useViewport();
   const inactive = data.products.filter((p) => !p.active);
   const active = data.products.length - inactive.length;
   const promo = data.promos.find((p) => p.active);
   const activePromos = data.promos.filter((p) => p.active).length;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 16 }}>
         <StatCard label="Platillos" value={data.products.length} sub={`${data.categories.length} categorías`} icon="utensils" />
         <StatCard label="Disponibles" value={`${active}/${data.products.length}`} sub={`${inactive.length} agotados`} icon="check" />
         <StatCard label="Promociones" value={data.promos.length} sub={`${activePromos} ${activePromos === 1 ? 'activa' : 'activas'}`} icon="tag" />
         <StatCard label="Promo de hoy" value={promo ? promo.day : '—'} sub={promo ? promo.name : 'Sin promo hoy'} icon="calendar" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', gap: 16, alignItems: 'start' }}>
         <Panel title="Requiere atención" action={<Button size="sm" variant="ghost" onClick={() => onGo('productos')} iconRight={<Ic n="arrow-right" size={14} />}>Ver productos</Button>}>
           {inactive.length === 0
             ? <EmptyState icon={<Ic n="check" size={24} />} title="Todo disponible" description="Ningún platillo está agotado ahora mismo." />
@@ -82,6 +84,7 @@ function InfoLine({ icon, k, v }) {
 
 /* =================== PRODUCTOS =================== */
 export function AdminProductos({ data }) {
+  const { isMobile } = useViewport();
   const [q, setQ] = React.useState('');
   const [editing, setEditing] = React.useState(null);
   const rows = data.products;
@@ -96,13 +99,14 @@ export function AdminProductos({ data }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <div style={{ width: 280 }}><Input placeholder="Buscar platillo…" value={q} onChange={(e) => setQ(e.target.value)} prefix={<Ic n="search" size={15} />} /></div>
-        <Button variant="ghost" style={{ marginLeft: 'auto' }} onClick={reset}>Restablecer</Button>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ width: isMobile ? '100%' : 280 }}><Input placeholder="Buscar platillo…" value={q} onChange={(e) => setQ(e.target.value)} prefix={<Ic n="search" size={15} />} /></div>
+        <Button variant="ghost" style={{ marginLeft: isMobile ? 0 : 'auto' }} onClick={reset}>Restablecer</Button>
         <Button iconLeft={<Ic n="plus" size={16} />} onClick={() => setEditing({ id: 'new', name: '', cat: 'tacos', price: '', desc: '', active: true })}>Crear producto</Button>
       </div>
 
-      <div style={{ background: 'var(--paper)', border: 'var(--bw) solid var(--ink-900)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-stamp)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--paper)', border: 'var(--bw) solid var(--ink-900)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-stamp)', overflowX: 'auto' }}>
+        <div style={{ minWidth: 640 }}>
         <Th cols="28px 1fr 130px 90px 110px" labels={['', 'Producto', 'Categoría', 'Precio', 'Estado']} extra="64px" />
         {filtered.length === 0
           ? <div style={{ padding: 12 }}><EmptyState icon={<Ic n="search-x" size={24} />} title="Sin resultados" description={`No hay platillos para "${q}".`} /></div>
@@ -122,6 +126,7 @@ export function AdminProductos({ data }) {
               <IconButton size="sm" variant="outline" label="Editar" onClick={() => setEditing({ ...p })}><Ic n="pencil" size={15} /></IconButton>
             </div>
           ))}
+        </div>
       </div>
 
       <ProductDrawer editing={editing} onClose={() => setEditing(null)} onSave={save} onDelete={(id) => { setProducts(rows.filter((p) => p.id !== id)); setEditing(null); }} data={data} />
@@ -278,6 +283,7 @@ function PromoDrawer({ open, onClose, onSave }) {
 
 /* =================== PRECIOS =================== */
 export function AdminPrecios({ data }) {
+  const { isMobile } = useViewport();
   const [rows, setRows] = React.useState(() => data.products.map((p) => ({ id: p.id, name: p.name, cat: p.cat, base: p.price, price: p.price })));
   const [bulkCat, setBulkCat] = React.useState('all');
   const [pct, setPct] = React.useState('');
@@ -320,7 +326,8 @@ export function AdminPrecios({ data }) {
       </div>
 
       {/* Tabla editable */}
-      <div style={{ background: 'var(--paper)', border: 'var(--bw) solid var(--ink-900)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-stamp)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--paper)', border: 'var(--bw) solid var(--ink-900)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-stamp)', overflowX: 'auto' }}>
+        <div style={{ minWidth: 560 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 130px 120px', gap: 12, padding: '11px 18px', background: 'var(--bone-200)', borderBottom: 'var(--bw) solid var(--ink-900)' }}>
           {['Producto', 'Categoría', 'Precio actual', 'Nuevo'].map((l) => <span key={l} style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)', color: 'var(--ink-500)' }}>{l}</span>)}
         </div>
@@ -338,10 +345,11 @@ export function AdminPrecios({ data }) {
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Barra guardar */}
-      <div style={{ position: 'fixed', left: 236, right: 0, bottom: 0, padding: '14px 28px', background: 'var(--paper)', borderTop: 'var(--bw) solid var(--ink-900)', display: 'flex', alignItems: 'center', gap: 16, zIndex: 30 }}>
+      <div style={{ position: 'fixed', left: isMobile ? 0 : 236, right: 0, bottom: 0, padding: isMobile ? '12px 14px' : '14px 28px', background: 'var(--paper)', borderTop: 'var(--bw) solid var(--ink-900)', display: 'flex', alignItems: 'center', gap: 12, zIndex: 30, flexWrap: 'wrap' }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: dirty.length ? 'var(--salsa-600)' : 'var(--ink-400)', textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>
           {dirty.length ? `${dirty.length} cambio${dirty.length > 1 ? 's' : ''} sin guardar` : 'Sin cambios'}
         </span>
