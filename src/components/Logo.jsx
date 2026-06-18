@@ -1,15 +1,11 @@
 import React from 'react';
-import logoSrc from '../assets/logo.png';
 
-/* Logo oficial de Barrio Bamba (lettering cursivo + calavera low-poly con corona).
-   `variant="full"` usa el PNG oficial (tinta sobre transparente); `invert` lo vuelve
-   claro vía filtro CSS para fondos oscuros. `variant="mark"` rinde una calavera
-   geométrica compacta (favicon / esquinas).
-   Se importa como módulo para que el build lo incruste en el HTML (file://). */
-const LOGO_SRC = logoSrc;
-
+/* Wordmark de Barrio Bamba: el NOMBRE en tipografía display condensada (Anton),
+   MAYÚSCULAS. `variant="full"` (por defecto) = texto "BARRIO BAMBA"; `invert`
+   lo vuelve claro sobre fondos oscuros. `variant="mark"` = calavera geométrica
+   compacta (para favicon / esquinas). `size` controla la altura/tamaño. */
 export function Logo({
-  variant = 'full',     // 'full' (lockup completo) | 'mark' (calavera compacta)
+  variant = 'full',     // 'full' (wordmark de texto) | 'mark' (calavera compacta)
   size = 40,
   invert = false,       // versión clara (sobre fondo negro)
   color = 'var(--ink-900)',
@@ -29,7 +25,28 @@ export function Logo({
       </svg>
     );
   }
+
+  // Wordmark de texto: "BARRIO BAMBA"
   return (
-    <img src={LOGO_SRC} alt={title} style={{ height: size, width: 'auto', display: 'block', filter: invert ? 'invert(1)' : 'none', ...styleProp }} {...rest} />
+    <span
+      role="img"
+      aria-label={title}
+      style={{
+        display: 'inline-block',
+        fontFamily: 'var(--font-display)',
+        fontWeight: 'var(--fw-regular)',
+        fontSize: size,
+        lineHeight: 1,
+        textTransform: 'uppercase',
+        letterSpacing: 'var(--ls-display)',
+        color: invert ? 'var(--bone-50)' : color,
+        whiteSpace: 'nowrap',
+        userSelect: 'none',
+        ...styleProp,
+      }}
+      {...rest}
+    >
+      Barrio Bamba
+    </span>
   );
 }
