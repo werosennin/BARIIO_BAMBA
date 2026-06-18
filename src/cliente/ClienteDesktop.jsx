@@ -23,7 +23,7 @@ export function ClienteDesktop() {
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '12px 16px' : '14px 28px', display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 24 }}>
           <Logo size={isMobile ? 28 : 34} invert />
           <nav style={{ marginLeft: isMobile ? 0 : 8, display: 'flex', gap: isMobile ? 14 : 22 }}>
-            {['Menú', 'Ubicación', 'Nosotros'].map((n, i) => (
+            {['Menú', 'Ubicación'].map((n, i) => (
               <a key={n} href="#" onClick={(e) => { e.preventDefault(); if (n === 'Ubicación') setLocOpen((o) => !o); }} style={{ textDecoration: 'none', color: i === 0 ? 'var(--bone-50)' : 'var(--ink-300)', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: isMobile ? 11 : 12, textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>{n}</a>
             ))}
           </nav>
