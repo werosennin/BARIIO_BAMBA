@@ -63,8 +63,10 @@ export function ProductCard({
       }}>{name}</h4>
       {description && (
         <p style={{
-          font: 'var(--type-body-sm)', color: 'var(--text-muted)',
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-regular)',
+          fontSize: isCard ? 'var(--fs-xs)' : 'var(--fs-sm)', lineHeight: 1.45,
+          color: 'var(--text-muted)',
+          /* Sin recorte: se muestra la descripción completa del platillo. */
         }}>{description}</p>
       )}
       <div style={{
